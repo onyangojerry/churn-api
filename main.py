@@ -3,10 +3,19 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import pickle
 import pandas as pd
+import logging
 
 # Load model
 with open("churn_pipeline.pkl", "rb") as f:
     model = pickle.load(f)
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
 
 app = FastAPI()
 
@@ -33,9 +42,15 @@ class CustomerInput(BaseModel):
 
 @app.post("/predict")
 def predict(input_data: CustomerInput):
-    input_df = pd.DataFrame([input_data.dict()])
+    input_dict = input_data.dict()
+    logger.info(f"Incoming request: {input_dict}")
+
+    input_df = pd.DataFrame([input_dict])
     prediction = model.predict(input_df)[0]
+
+    logger.info(f"Prediction result: {prediction}")
     return {"churn_prediction": prediction}
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
