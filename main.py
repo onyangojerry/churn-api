@@ -4,6 +4,8 @@ from pydantic import BaseModel
 import pickle
 import pandas as pd
 import logging
+from typing import List, Union
+
 
 # Load model
 with open("churn_pipeline.pkl", "rb") as f:
@@ -41,15 +43,20 @@ class CustomerInput(BaseModel):
     TotalCharges: float
 
 @app.post("/predict")
-def predict(input_data: CustomerInput):
-    input_dict = input_data.dict()
-    logger.info(f"Incoming request: {input_dict}")
+def predict(input_data: Union[CustomerInput, List[CustomerInput]]):
+    # Normalize to list
+    if isinstance(input_data, CustomerInput):
+        input_data = [input_data]
 
-    input_df = pd.DataFrame([input_dict])
-    prediction = model.predict(input_df)[0]
+    input_dicts = [record.dict() for record in input_data]
+    logger.info(f"Incoming batch request with {len(input_dicts)} records.")
 
-    logger.info(f"Prediction result: {prediction}")
-    return {"churn_prediction": prediction}
+    input_df = pd.DataFrame(input_dicts)
+    predictions = model.predict(input_df).tolist()
+
+    logger.info(f"Batch prediction result: {predictions}")
+    return {"predictions": predictions}
+
 
 
 if __name__ == "__main__":
