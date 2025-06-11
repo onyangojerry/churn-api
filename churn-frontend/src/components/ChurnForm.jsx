@@ -61,9 +61,16 @@ export default function ChurnForm() {
       </form>
       {result && (
         <div className="mt-4 text-lg">
-          Prediction: <strong>{result}</strong>
+            Prediction:{" "}
+            <strong
+            className={
+                result === "Yes" ? "text-green-600" : "text-red-600"
+            }
+            >
+            {result}
+            </strong>
         </div>
-      )}
+        )}
     </div>
   );
 }
