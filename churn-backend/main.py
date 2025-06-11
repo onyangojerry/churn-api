@@ -8,6 +8,18 @@ from typing import List, Union
 from fastapi.middleware.cors import CORSMiddleware
 
 
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # or ["*"] for all origins (not safe for prod)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 # Load model
 with open("churn_pipeline.pkl", "rb") as f:
     model = pickle.load(f)
@@ -20,15 +32,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # or ["*"] for all origins (not safe for prod)
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 class CustomerInput(BaseModel):
